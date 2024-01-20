@@ -90,7 +90,7 @@ docker run -it \
     --url="${URL}"
 
 
-# SQL Queries
+# SQL Query for 
 SELECT
 	lpep_pickup_datetime,
 	lpep_dropoff_datetime,
@@ -103,3 +103,65 @@ FROM
 	JOIN taxi_zone_lookup zdo
 		ON gtd."DOLocationID" = zdo."LocationID"
 LIMIT 100;
+
+# Question 3 HW how many total trips were taken on September 18, 2019?
+SELECT 
+  COUNT(*)
+FROM 
+  green_trip_data
+WHERE 
+	DATE(lpep_pickup_datetime) = '2019-09-18' AND
+	DATE(lpep_dropoff_datetime) = '2019-09-18';
+# 15612
+
+# Question 4 Longest trip? Answer the day it happened
+SELECT
+  lpep_pickup_datetime, trip_distance
+FROM
+  green_trip_data
+ORDER BY
+  trip_distance DESC
+limit 1;
+# 2019-09-26
+
+# Question 5  Which 3 boroughs have a sum total_amount greater than 50k on 9/18/2019?
+SELECT
+	tzl."Borough", SUM(gtd.total_amount) AS total_amount
+FROM
+	green_trip_data gtd JOIN taxi_zone_lookup tzl
+ON
+	gtd."PULocationID" = tzl."LocationID"
+WHERE
+	DATE(gtd."lpep_pickup_datetime") = '2019-9-18'
+GROUP BY
+	tzl."Borough"
+ORDER BY
+	total_amount DESC
+LIMIT 3;
+# "Brooklyn" "Manhattan" "Queens"
+
+# Question 6 Starting from pick up zone Astoria, which drop off zone had the largest tip on 9/2019?
+SELECT
+	tzld."Zone" AS drop_off_zone,
+	MAX(gtd."tip_amount") AS largest_tip
+	
+FROM
+	green_trip_data gtd
+	JOIN taxi_zone_lookup tzlp
+	ON gtd."PULocationID" = tzlp."LocationID"
+	
+	JOIN taxi_zone_lookup tzld
+	ON gtd."DOLocationID" = tzld."LocationID"
+		
+WHERE
+	tzlp."Zone" = 'Astoria'
+	AND DATE(gtd."lpep_pickup_datetime") BETWEEN '2019-09-01' AND '2019-09-30'
+	
+GROUP BY
+	tzld."Zone"
+	
+ORDER BY
+	largest_tip DESC
+LIMIT 1;
+# "JFK Airport"
+	
